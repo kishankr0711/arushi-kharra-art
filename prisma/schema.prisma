@@ -1,0 +1,107 @@
+// generator client {
+//  provider = "prisma-client"    // Changed from "prisma-client-js"
+//  output   = "../src/generated/prisma"  // Custom output path
+//}
+
+//datasource db {
+//  provider = "postgresql"
+  // NO url here in Prisma 7!
+//}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model Painting {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String
+  price       Float
+  image       String   @default("/images/placeholder.jpg")
+  description String   @db.Text
+  category    String
+  dimensions  String
+  year        Int
+  isFeatured  Boolean  @default(false)
+  inStock     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+model Order {
+  id        String   @id @default(uuid())
+  email     String
+  name      String
+  address   String
+  total     Float
+  status    String   @default("pending") // pending, paid, shipped
+  items     Json     // Store cart items
+  createdAt DateTime @default(now())
+  @@index([status])
+}
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?   // For credentials provider
+  role           String    @default("user") // "user" or "admin"
+  accounts       Account[]
+  sessions       Session[]
+  passwordResets PasswordResetToken[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
