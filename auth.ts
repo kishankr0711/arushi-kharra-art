@@ -203,7 +203,7 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
+        token.role = (user as { role?: string }).role ?? token.role ?? "user"
         token.id = user.id
       }
 
@@ -259,9 +259,9 @@ export const {
               where: { id: existing.id },
               data: { role: "admin" },
             })
-            user.role = "admin"
+            ;(user as { role?: string }).role = "admin"
           } else {
-            user.role = existing.role
+            ;(user as { role?: string }).role = existing.role
           }
         } else {
           const role = ADMIN_EMAILS.includes(normalizedEmail) ? "admin" : "user"
@@ -273,7 +273,7 @@ export const {
               role,
             },
           })
-          user.role = role
+          ;(user as { role?: string }).role = role
         }
       }
       return true

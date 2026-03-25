@@ -10,6 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        art: "bg-[#d0a24e] text-white hover:bg-[#bc8f3d]",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -38,24 +39,36 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonIntent =
+  | "default"
+  | "art"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link"
+  | "destructive"
+
 function Button({
   className,
-  variant = "default",
+  variant,
+  intent,
   size = "default",
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    intent?: ButtonIntent
   }) {
   const Comp = asChild ? Slot.Root : "button"
+  const resolvedVariant = intent ?? variant ?? "default"
 
   return (
     <Comp
       data-slot="button"
-      data-variant={variant}
+      data-variant={resolvedVariant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant: resolvedVariant, size, className }))}
       {...props}
     />
   )
